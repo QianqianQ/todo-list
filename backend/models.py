@@ -1,7 +1,6 @@
-from typing import Optional
 from pydantic import BaseModel
 
 class Task(BaseModel):
-    id: Optional[int] = None
+    id: str
     title: str
     completed: bool = False

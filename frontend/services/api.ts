@@ -10,7 +10,7 @@ export const fetchTasks = async (): Promise<Task[]> => {
 };
 
 // Add a new task
-export const addTask = async (task: Omit<Task, 'id'>): Promise<Task> => {
+export const addTask = async (task: Task): Promise<Task> => {
   console.log(task);
   const response = await axios.post(`${API_URL}/tasks`, task);
   return response.data;
@@ -18,11 +18,11 @@ export const addTask = async (task: Omit<Task, 'id'>): Promise<Task> => {
 
 // Update a task
 export const updateTask = async (task: Task): Promise<Task> => {
-  const response = await axios.put(`${API_URL}/${task.id}`, task);
+  const response = await axios.put(`${API_URL}/tasks/${task.id}`, task);
   return response.data;
 };
 
 // Delete a task
-export const deleteTask = async (id: number): Promise<void> => {
-  await axios.delete(`${API_URL}/${id}`);
+export const deleteTask = async (id: string): Promise<void> => {
+  await axios.delete(`${API_URL}/tasks/${id}`);
 };

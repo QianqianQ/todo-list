@@ -6,7 +6,6 @@ import { Task } from '../models/models';
 
 const TaskForm = ({ onaddTask } ) => {
   const [title, setTitle] = useState<string>('');
-  const [tasks, setTasks] = useState<Task[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Task } from '@/models/models';
 import { fetchTasks, addTask, updateTask, deleteTask } from '../services/api';
@@ -22,7 +23,7 @@ const manageTasks = () => {
   // Add a new task
   const handleAddTask = async (title: string) => {
     try {
-      const newTask = await addTask({ title, completed: false });
+      const newTask = await addTask({ title, id: uuidv4(), completed: false });
       setTasks([...tasks, newTask]);
     } catch (err) {
       console.log('Failed to add task.');
@@ -40,7 +41,7 @@ const manageTasks = () => {
   };
 
   // Delete a task
-  const handleDeleteTask = async (id: number) => {
+  const handleDeleteTask = async (id: string) => {
     try {
       await deleteTask(id);
       setTasks(tasks.filter((task) => task.id !== id));
