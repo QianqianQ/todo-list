@@ -1,16 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Task } from '../models/models';
-import { fetchTasks } from '../services/api';
 
-export default function TaskList() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-
-  useEffect(() => {
-    fetchTasks().then(setTasks);
-  }, []);
+export default function TaskList({ tasks }) {
 
   if (tasks === null) {
     return <p>Loading...</p>; // ✅ Prevents hydration mismatch
@@ -20,6 +14,7 @@ export default function TaskList() {
     ...task,
     id: task.id || `temp-id-${index}`, // Generate a UUID for missing IDs
   }));
+
   return (
     <div className="max-h-96 overflow-y-auto w-[70vw]">
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">

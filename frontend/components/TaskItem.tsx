@@ -1,9 +1,9 @@
 "use client";
 
-import { Task, TaskItemProps } from '../models/models';
+import { Task } from '../models/models';
 import { useState } from 'react';
 
-const TaskItem = ({ task, onUpdateTask, onDeleteTask }: TaskItemProps) => {
+const TaskItem = ({ task, onUpdateTask, onDeleteTask }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [title, setTitle] = useState<string>(task.title);
 

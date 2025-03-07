@@ -1,26 +1,17 @@
 "use client";
 
 import { useState } from 'react';
-import { addTask } from '../services/api';
+
 import { Task } from '../models/models';
 
-const TaskForm = () => {
+const TaskForm = ({ onaddTask } ) => {
   const [title, setTitle] = useState<string>('');
   const [tasks, setTasks] = useState<Task[]>([]);
-
-  const handleAddTask = async (title: string) => {
-    try {
-      const newTask = await addTask({ title, completed: false });
-      setTasks([...tasks, newTask]);
-    } catch (err) {
-      console.log('Failed to add task.');
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    handleAddTask(title);
+    onaddTask(title);
   };
 
   return (
