@@ -1,0 +1,72 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+
+
+steps:
+- checkout: self
+
+# Set up Node.js
+- task: UseNode@1
+  inputs:
+    version: '22.x'
+
+# Cache node_modules
+- task: Cache@2
+  inputs:
+    key: 'npm | "$(Agent.OS)" | package-lock.json'
+    restoreKeys: |
+      npm | "$(Agent.OS)"
+    path: $(Pipeline.Workspace)/node_modules
+
+# Install frontend dependencies
+- script: |
+    cd frontend
+    npm install
+  displayName: 'Install frontend dependencies'
+
+# Run frontend linting
+- script: |
+    cd frontend
+    npm run lint
+  displayName: 'Run frontend linting'
+
+# Set up Python
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.12'
+    addToPath: true
+
+# Cache Python dependencies
+- task: Cache@2
+  inputs:
+    key: 'pip | "$(Agent.OS)" | requirements.txt'
+    restoreKeys: |
+      pip | "$(Agent.OS)"
+    path: $(Pipeline.Workspace)/.venv
+
+# Install backend dependencies
+- script: |
+    cd backend
+    pip install -r requirements.txt
+  displayName: 'Install backend dependencies'
+
+# Run backend tests
+- script: |
+    cd backend
+    pytest
+  displayName: 'Run backend tests'
+
+# Run backend linting
+- script: |
+    cd backend
+    flake8 .
+  displayName: 'Run backend linting'
