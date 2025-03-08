@@ -1,0 +1,106 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - master  # Trigger on pushes to the main branch
+  pull_request:
+    branches:
+      - master  # Trigger on pull requests to the main branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Node.js for the frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22  # Use the Node.js version your app requires
+
+      # Install frontend dependencies and run tests
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+
+      # - name: Run frontend tests
+      #   run: |
+      #     cd frontend
+      #     npm test
+
+      - name: Run frontend linting
+        run: |
+          cd frontend
+          npm run lint
+
+      # Set up Python for the backend
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12  # Use the Python version your app requires
+
+      # Install backend dependencies and run tests
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          pytest
+
+      - name: Run backend linting
+        run: |
+          cd backend
+          flake8 .  # Example: Run flake8 for Python linting
+
+      # Set up Docker Buildx for multi-platform builds
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+
+      # Log in to Docker Hub (if you're pushing images to Docker Hub)
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      # Build and push the frontend Docker image
+      # - name: Build and push frontend image
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: ./frontend
+      #     push: true
+      #     tags: your-dockerhub-username/my-app-frontend:latest
+
+      # Build and push the backend Docker image
+      # - name: Build and push backend image
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: ./backend
+      #     push: true
+      #     tags: your-dockerhub-username/my-app-backend:latest
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-test  # Wait for the build-and-test job to complete
+
+  #   steps:
+  #     # Checkout the repository
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+
+  #     # Deploy to your target environment (e.g., a server or cloud provider)
+  #     - name: Deploy to production
+  #       run: |
+  #         echo "Deploying to production..."
+  #         # Add your deployment commands here
+  #         # Example: SSH into a server and run `docker-compose up`
+  #         ssh user@server "cd /path/to/app && docker-compose pull && docker-compose up -d"

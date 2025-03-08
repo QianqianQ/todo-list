@@ -16,14 +16,17 @@ app.add_middleware(
 
 tasks = []
 
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the To-Do List API"}
+
 
 @app.get("/tasks")
 def get_tasks():
     print(tasks)
     return tasks
+
 
 @app.post("/tasks")
 def create_task(task: Task):
@@ -31,11 +34,13 @@ def create_task(task: Task):
     print(tasks)
     return task
 
+
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int, task: Task):
     tasks[task_id] = task
     print(tasks)
     return task
+
 
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: str):
@@ -43,7 +48,7 @@ def delete_task(task_id: str):
     print(tasks)
     if not any(task.id == task_id for task in tasks):
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     tasks = [task for task in tasks if task.id != task_id]
     print(tasks)
 
