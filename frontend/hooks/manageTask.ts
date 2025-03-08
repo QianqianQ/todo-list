@@ -41,16 +41,16 @@ const manageTasks = () => {
   };
 
   // Delete a task
-  const handleDeleteTask = async (id: string) => {
+  const handleDeleteTask = async (task: Task) => {
     try {
-      await deleteTask(id);
-      setTasks(tasks.filter((task) => task.id !== id));
+      await deleteTask(task.id);
+      setTasks(tasks.filter((t) => t.id !== task.id));
     } catch (err) {
       console.log('Failed to delete task.');
     }
   };
 
-  return { tasks, handleAddTask, handleUpdateTask, handleDeleteTask };
+  return { tasks, handleAddTask, handleDeleteTask };
 };
 
 export default manageTasks;

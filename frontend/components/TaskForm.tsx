@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 
-import { Task } from '../models/models';
+// import { Task } from '../models/models';
 
-const TaskForm = ({ onaddTask } ) => {
+const TaskForm = ({ onAddTask }: { onAddTask: (title: string) => void } ) => {
   const [title, setTitle] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onaddTask(title);
+    onAddTask(title);
   };
 
   return (
