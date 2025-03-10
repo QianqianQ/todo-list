@@ -5,6 +5,7 @@ from schemas import TaskSchema
 
 import database
 from models import Task
+from celery_app import send_notification
 
 app = FastAPI()
 
@@ -65,3 +66,9 @@ def delete_task(task_id: str, db: Session = Depends(get_db)):
     db.delete(task)  # Remove from the database
     db.commit()  # Save changes
     return {"message": "Task deleted successfully"}
+
+
+@app.post("/notify")
+def notify_user(message: str):
+    send_notification.delay(message)
+    return {"message": "Notification is being processed"}
