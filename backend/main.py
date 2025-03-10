@@ -1,6 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from schemas import TaskSchema
 
+import database
 from models import Task
 
 app = FastAPI()
@@ -14,7 +17,16 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-tasks = []
+database.Base.metadata.create_all(bind=database.engine)
+
+
+# Dependency to get the database session
+def get_db():
+    db = database.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get("/")
@@ -22,34 +34,34 @@ def read_root():
     return {"message": "Welcome to the To-Do List API"}
 
 
-@app.get("/tasks")
-def get_tasks():
-    print(tasks)
-    return tasks
+@app.get("/tasks", response_model=list[TaskSchema])
+def get_tasks(db: Session = Depends(get_db)):
+    return db.query(Task).all()
 
 
-@app.post("/tasks")
-def create_task(task: Task):
-    tasks.append(task)
-    print(tasks)
+@app.post("/tasks", response_model=TaskSchema)
+def create_task(task: TaskSchema, db: Session = Depends(get_db)):
+    task = Task(**task.model_dump())  # Convert Pydantic model to SQLAlchemy model:
+    db.add(task)
+    db.commit()
+    db.refresh(task)
     return task
 
 
-@app.put("/tasks/{task_id}")
-def update_task(task_id: int, task: Task):
-    tasks[task_id] = task
-    print(tasks)
-    return task
+# @app.put("/tasks/{task_id}")
+# def update_task(task_id: int, task: Task):
+#     tasks[task_id] = task
+#     print(tasks)
+#     return task
 
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: str):
-    global tasks
-    print(tasks)
-    if not any(task.id == task_id for task in tasks):
+def delete_task(task_id: str, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == task_id).first()
+
+    if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    tasks = [task for task in tasks if task.id != task_id]
-    print(tasks)
-
+    db.delete(task)  # Remove from the database
+    db.commit()  # Save changes
     return {"message": "Task deleted successfully"}
