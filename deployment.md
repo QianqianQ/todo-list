@@ -185,14 +185,14 @@ Info:
 **Conclusion**: No permission to create service principal then might be impossible to
 login azure from github actions
 
-#### 4. Azure DevOps
+#### 4. Azure DevOps PAT
 
 - Azure DevOps setup GitHub connection
 - Azure DevOps config PAT
 github-deploy: 43Cg7plKmFKv1UOaDDSz80KRuR6q7Ct1w9Ve1pWiGXn6JZoCJwlvJQQJ99BCACAAAAAovqbIAAASAZDO1X40
 
 
-#### Deploy from local env with script
+#### 5. Deploy from local env with script
 - Ensure You Have SSH Access to the VM
 
 - Make sure you have SSH access to your Azure VM. You need the public IP of the VM and the private key associated with the VM's SSH key.
@@ -218,3 +218,25 @@ az vm run-command invoke --command-id RunShellScript \
   --scripts "cd /path/to/your/app && git pull && docker-compose up -d --build"
 
 ```
+
+#### 6. Final solution for deployment to VM via GitHub Actions
+
+- Use `scp` to trasfer the code to the VM
+- In Github, navigate to Settings > Secrets and variables > Actions to add secrets required by cicd yaml files
+- `.github/workflows/cd-azure-vm.yml`
+- In VM, some configs need to be set first. e.g.,
+make sure the directory where the code will be deployed exists
+```bash
+mkdir -p /home/azureuser/app
+chown azureuser:azureuser /home/azureuser/app
+```
+- Optional step
+    ```yaml
+    - name: Pull latest Docker images
+    run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} "cd /home/azureuser/app && docker-compose pull"
+
+    - name: Check Docker Compose logs
+    run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} "cd /home/azureuser/app && docker-compose logs"
+    ```
