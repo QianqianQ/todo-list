@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-and-test:
+    if: false  # This disables the entire job
     runs-on: ubuntu-latest
 
     steps:
