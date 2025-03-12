@@ -240,3 +240,27 @@ chown azureuser:azureuser /home/azureuser/app
     run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} "cd /home/azureuser/app && docker-compose logs"
     ```
+
+## Azure Container Apps (Not Tested)
+
+- Each component (FastAPI, Next.js, PostgreSQL, Nginx) is containerized using Docker
+- Push Docker Images to Azure Container Registry (ACR)
+    - Create an Azure Container Registry and log in
+    - Build and push the Docker images for FastAPI, Next.js, and Nginx to ACR
+- Deploy to Azure Container Apps
+    - Create an Azure Container Apps Environment
+    - Deploy containers from images
+- Azure credentials are required for Github Actions
+
+## Azure Kubernetes Service (Not Tested) 
+
+https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli
+
+
+- Each component (FastAPI, Next.js, PostgreSQL, Nginx) needs to be containerized using Docker.
+- Push Docker Images to Azure Container Registry (ACR)
+- Create an AKS Cluster
+- Get AKS credentials to connect
+- Create Kubernetes manifests (YAML files)
+- Deploy to AKS
+- Access: Get the external IP of the Nginx service: `kubectl get svc nginx`
