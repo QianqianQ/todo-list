@@ -185,7 +185,14 @@ Info:
 **Conclusion**: No permission to create service principal then might be impossible to
 login azure from github actions
 
-### Deploy from local env with script
+#### 4. Azure DevOps
+
+- Azure DevOps setup GitHub connection
+- Azure DevOps config PAT
+github-deploy: 43Cg7plKmFKv1UOaDDSz80KRuR6q7Ct1w9Ve1pWiGXn6JZoCJwlvJQQJ99BCACAAAAAovqbIAAASAZDO1X40
+
+
+#### Deploy from local env with script
 - Ensure You Have SSH Access to the VM
 
 - Make sure you have SSH access to your Azure VM. You need the public IP of the VM and the private key associated with the VM's SSH key.

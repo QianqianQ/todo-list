@@ -1,0 +1,52 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - github-actions
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # - name: Login to Azure with PAT
+      #   run: |
+      #     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+      #     az devops configure --defaults organization=https://dev.azure.com/qianqianqin project=demo
+      #     az login --service-principal -u https://dev.azure.com --tenant ${{ secrets.AZURE_PAT }}
+
+      - name: Copy .env.prod to .env
+        run: |
+          if [ -f .env.prod ]; then
+            cp .env.prod .env
+            echo ".env file created from .env.prod"
+          else
+            echo "Error: .env.prod file not found"
+            exit 1
+          fi
+
+      - name: Copy files to Azure VM
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_VM_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          scp -oStrictHostKeyChecking=no -r ./* ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }}:/home/${{ secrets.AZURE_VM_USER }}/app
+          scp -oStrictHostKeyChecking=no -r ./.env* ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }}:/home/${{ secrets.AZURE_VM_USER }}/app
+        shell: bash
+
+      - name: Stop existing Docker Compose services
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} "cd /home/${{ secrets.AZURE_VM_USER }}/app && docker-compose down"
+
+      - name: Start Docker Compose services
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.AZURE_VM_USER }}@${{ secrets.AZURE_VM_IP }} "cd /home/${{ secrets.AZURE_VM_USER }}/app && docker-compose up -d"
+
+    #   - name: Deploy to Azure VM
+    #     run: |
+    #       az vm run-command invoke --command-id RunShellScript \
+    #         --name <VM_NAME> --resource-group <RESOURCE_GROUP> \
+    #         --scripts "cd /your/app/directory && git pull && docker-compose up -d --build"
