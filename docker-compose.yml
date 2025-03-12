@@ -5,8 +5,10 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost/api
+    # environment:
+      # - ENV=${ENVIRONMENT}
+      # - NEXT_PUBLIC_API_URL=http://localhost/api
+      # - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     volumes:
       - ./frontend:/app  # Mounts local frontend folder
       - /app/node_modules  # Prevents overwriting node_modules
@@ -15,6 +17,8 @@ services:
       - backend
     networks:
       - app-network
+    env_file:
+      - .env
 
   backend:
     build:
@@ -24,14 +28,17 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-    environment:
-      - ALLOWED_ORIGINS=http://localhost,http://localhost:3000
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/todo_db
+    # environment:
+    #   - ENV=${ENVIRONMENT}
+    #   - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+    #   - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/todo_db
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - app-network
+    env_file:
+      - .env
 
   postgres:
     image: postgres:latest
@@ -53,6 +60,8 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
+    env_file:
+      - .env
 
   # Nginx service
   nginx:
@@ -63,7 +72,8 @@ services:
       - "80:80"      # Expose Nginx on port 80
       - "443:443"    # Expose Nginx on port 443 (for HTTPS)
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mount custom Nginx configuration
+      - ./${NGINX_CONFIG}:/etc/nginx/nginx.conf  # Load the correct config based on the environment
+      # - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mount custom Nginx configuration
       # - ./certs:/etc/nginx/certs            # Mount SSL certificates (optional)
       # - ./certbot/conf:/etc/letsencrypt
     depends_on:
@@ -71,6 +81,8 @@ services:
       - frontend
     networks:
       - app-network
+    env_file:
+      - .env
 
 networks:
   app-network:

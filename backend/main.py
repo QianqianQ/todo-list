@@ -3,14 +3,25 @@ import os
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from schemas import TaskSchema
+# from dotenv import load_dotenv
 
 import database
 from models import Task
+from schemas import TaskSchema
+
+# Load the appropriate .env file based on the environment
+# if os.getenv("ENVIRONMENT") == "prod":
+#     load_dotenv(".env.prod")
+# else:
+#     load_dotenv(".env.local")
 
 app = FastAPI()
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost").split(",")
+# Load environment variables
+allowed_origins = os.getenv(
+    "ALLOW_ORIGINS",
+    "http://localhost,http://127.0.0.1,http://localhost:3000,http://127.0.0.1:3000").split(",")
+# debug = os.getenv("DEBUG", "False") == "True"
 
 # Add CORS middleware
 app.add_middleware(
