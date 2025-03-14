@@ -6,6 +6,6 @@ class TaskSchema(BaseModel):
     id: str
     title: str
     completed: bool
-    description: Optional[str] = None
+    description: Optional[str] = ""
 
     model_config = ConfigDict(from_attributes=True)
