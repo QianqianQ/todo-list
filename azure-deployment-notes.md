@@ -303,9 +303,15 @@ Local development
 func init --python
 func init MyProjFolder --worker-runtime python --model V2
 func new --name ManageTask --template "HTTP trigger" --authlevel "anonymous"
+
+# Activate python venv and install dependencies
+
 # run locally
 func start
 # publish
+
+# First add env var to Function apps
+# - Settings -> Environment Variables: TableName, TableStorageConnectionString
 func azure functionapp publish <APP_NAME>
 
 # info
@@ -314,7 +320,6 @@ az functionapp list --resource-group rg-azuretraining-qianqian --output table
 
 - API -> CORS to allow frontend requests
 - Monitoring: Advior recommendations, Application Insights, .etc.
-- Settings -> Environment Variables: TableName, TableStorageConnectionString
 ### Deployment issues
 
 - FastAPI app deployment failure

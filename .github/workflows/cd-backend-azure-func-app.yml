@@ -1,0 +1,189 @@
+# Because of permission limitation, this pipeline does not work
+# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure Functions: https://aka.ms/python-webapps-actions
+
+name: Build and deploy Python project to Azure Function App
+
+on:
+  push:
+    branches:
+      - backend_azure_func_app_with_azure_table
+  workflow_dispatch:
+
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'function_app' # set this to the path to your web app project, defaults to the repository root
+  PYTHON_VERSION: '3.12' # set this to the python version to use (supports 3.6, 3.7, 3.8)
+
+jobs:
+  build:
+    if: false  # This job will be skipped
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Create and start virtual environment
+        run: |
+          cd function_app
+          python -m venv venv
+          source venv/bin/activate
+
+      - name: Install dependencies
+        run: |
+          cd function_app
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      # Optional: Add step to run tests here
+
+      - name: Zip artifact for deployment
+        run: |
+          cd function_app
+          tar --exclude='venv/*' -czvf ../release.tar.gz .
+
+      # - name: List contents of release.zip
+      #   run: |
+      #       unzip -l release.zip
+
+      # - name: List files after zipping
+      #   run: ls -R
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: release.tar.gz
+
+      # - name: Verify artifact upload
+      #   run: |
+      #       echo "Artifact uploaded: python-app"
+      #       ls -l release.zip
+
+      # - name: Generate checksum before upload
+      #   run: |
+      #       sha256sum release.zip
+  deploy:
+    if: false
+    runs-on: ubuntu-latest
+    # needs: build
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+          path: release.tar.gz
+
+      - name: List files after downloading
+        run: |
+          pwd
+          ls -R
+
+      # - name: Check permissions of release.zip
+      #   run: |
+      #     ls -l release.zip
+
+      # - name: Fix permissions of release.zip
+      #   run: |
+      #     chmod 644 release.zip
+
+      # - name: Debug release.zip with stat
+      #   run: |
+      #     stat ./release.zip
+
+      # - name: Generate checksum after download
+      #   run: |
+      #     sha256sum release.zip
+
+      # - name: List contents of release.zip
+      #   run: |
+      #       unzip -l release.zip
+
+      # - name: Test release.zip
+      #   run: |
+      #     if unzip -t ./release.zip; then
+      #       echo "release.zip is valid."
+      #     else
+      #       echo "Error: release.zip is corrupted!"
+      #       exit 1
+      #     fi
+      # - name: Verify release.zip exists
+      #   run: |
+      #     pwd
+      #     if [ ! -f "release.zip" ]; then
+      #       echo "Error: release.zip not found!"
+      #       exit 1
+      #     fi
+
+      # - name: List contents of release.zip
+      #   run: |
+      #       unzip -l ./release.zip
+
+      - name: Unzip artifact for deployment
+        run: |
+          tar -xzvf release.tar.gz -C function_app
+
+      - name: 'Deploy to Azure Functions'
+        uses: Azure/functions-action@v1
+        id: deploy-to-function
+        with:
+          app-name: 'todo-app-backend-qianqian'
+          slot-name: 'Production'
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_FUNCTION_APP_PUBLISHPROFILE }}
+
+  deploy_no_compression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # This is required for actions/checkout
+
+    steps:
+
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure CLI script
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az account show
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Create and start virtual environment
+        run: |
+          cd function_app
+          python -m venv venv
+          source venv/bin/activate
+
+      - name: Install dependencies
+        run: |
+          cd function_app
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: 'Deploy to Azure Functions'
+        uses: Azure/functions-action@v1
+        id: deploy-to-function
+        with:
+          app-name: 'todo-app-backend-qianqian'
+          slot-name: 'Production'
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_FUNCTION_APP_PUBLISHPROFILE }}
