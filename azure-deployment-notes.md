@@ -277,9 +277,22 @@ The Microsoft Azure Monitor Application Insights JavaScript SDK collects usage d
 
 ## App Service for backend
 
+- Free plan, but might be unstable
 > Error: The requested app service plan cannot be created in the current resource group 'rg-azuretraining-qianqian' because it does not support free Linux app service plans. It has free plan for Windows app service.
+- Limited Runtime stack and version
 
-- Set API url: Settings -> Env Var
+Steps
+- Settings -> Configuration -> Enabling SCM
+- Deployment Center -> multiple sources -> GitHub
+- Download publish profile and add to github secret
+- Set environment variables: Settings -> Env Var
+- Settings -> Configuration -> Add startup command: `gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app`
+- Log stream to debug deployment
+
+Issues:
+    - https://learn.microsoft.com/en-us/azure/app-service/configure-language-python#modulenotfounderror-when-app-starts
+
+    Solution: Set SCM_DO_BUILD_DURING_DEPLOYMENT as 1, and also add required environment variables to Azure Web App
 
 ## Azure Function App for backend
 ✅ Pros:

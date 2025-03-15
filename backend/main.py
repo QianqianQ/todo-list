@@ -1,20 +1,13 @@
 import os
 import json
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-# from dotenv import load_dotenv
+from azure_storage_table import table_client
 
-import database
 from models import Task
 from schemas import TaskSchema
 import chat
 from message import send_service_bus_message
-# Load the appropriate .env file based on the environment
-# if os.getenv("ENVIRONMENT") == "prod":
-#     load_dotenv(".env.prod")
-# else:
-#     load_dotenv(".env.local")
 
 app = FastAPI()
 
@@ -24,7 +17,6 @@ app.include_router(chat.router)
 allowed_origins = os.getenv(
     "ALLOW_ORIGINS",
     "http://localhost,http://127.0.0.1,http://localhost:3000,http://127.0.0.1:3000").split(",")
-# debug = os.getenv("DEBUG", "False") == "True"
 
 # Add CORS middleware
 app.add_middleware(
@@ -35,17 +27,6 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-database.Base.metadata.create_all(bind=database.engine)
-
-
-# Dependency to get the database session
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 @app.get("/")
 def read_root():
@@ -53,17 +34,20 @@ def read_root():
 
 
 @app.get("/tasks", response_model=list[TaskSchema])
-def get_tasks(db: Session = Depends(get_db)):
-    return db.query(Task).all()
+def get_tasks():
+    tasks = table_client.list_entities()
+    return [{"id": t["RowKey"],
+             "title": t.get("title", "Untitled Task"),
+             "completed": t.get("completed", False),
+             "description": t.get("description", '')}
+            for t in tasks]
 
 
 @app.post("/tasks", response_model=TaskSchema)
-def create_task(task: TaskSchema, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def create_task(task: TaskSchema, background_tasks: BackgroundTasks):
     model_dump = task.model_dump()
-    task = Task(**model_dump)  # Convert Pydantic model to SQLAlchemy model:
-    db.add(task)
-    db.commit()
-    db.refresh(task)
+    entity = Task(**model_dump)
+    table_client.upsert_entity(entity=entity.__dict__)
     background_tasks.add_task(send_service_bus_message, json.dumps(model_dump))
     return task
 
@@ -76,12 +60,9 @@ def create_task(task: TaskSchema, background_tasks: BackgroundTasks, db: Session
 
 
 @app.delete("/tasks/{task_id}")
-def delete_task(task_id: str, db: Session = Depends(get_db)):
-    task = db.query(Task).filter(Task.id == task_id).first()
-
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-
-    db.delete(task)  # Remove from the database
-    db.commit()  # Save changes
-    return {"message": "Task deleted successfully"}
+def delete_task(task_id: str):
+    try:
+        table_client.delete_entity(partition_key="task", row_key=task_id)
+        return {"message": "Task deleted"}
+    except:
+        raise HTTPException(status_code=404, detail="Fail to delete the task")
