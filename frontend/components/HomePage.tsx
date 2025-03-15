@@ -7,7 +7,7 @@ import TaskForm from "./TaskForm";
 export default function HomePage() {
 
   const { tasks, handleAddTask, handleDeleteTask } = manageTasks();
-
+  console.log(process.env.NEXT_PUBLIC_API_URL)
   return (
     <div>
       <div className="text-center my-5 flex flex-col gap-4">
