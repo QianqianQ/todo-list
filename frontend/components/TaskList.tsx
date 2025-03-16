@@ -12,7 +12,7 @@ export default function TaskList({ tasks, onDeleteTask }: TaskListProps) {
   }
 
   return (
-    <div className="max-h-96 overflow-y-auto w-[70vw]">
+    <div className="max-h-screen overflow-y-auto w-[70vw]">
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
         <h2 className="text-xl font-bold text-white">My Tasks</h2>
       </div>
