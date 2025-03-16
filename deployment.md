@@ -145,26 +145,21 @@ http://your-vm-ip/api/ → Requests are forwarded to FastAPI
 
 **Note**: Calling backend API from frontend needs to consider CORS. Backend needs to be configured
 
-### Optional: Secure with SSL
+#### Optional: Secure with SSL
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
-### Try azure authentication for Github Actions
+### Azure authentication for Github Actions
 
-#### 1. Generate Azure Credentials
+**Conclusion**: No permission to create service principal then might be impossible to login azure from github actions
 
-**Fails** in create Service Principal with grant roles: AuthorizationFailed
-
-CI/CD pipeline in GitHub may not work
-
-#### 2. Add AZURE_CREDENTIALS to GitHub Secrets
+#### Azure Credentials
 
 **Fails** in create Service Principal with grant roles: AuthorizationFailed
 
 Settings → Secrets and variables → Actions -> New repository secret -> AZURE_CREDENTIALS -> entire JSON output from Azure output
 
-#### 3.Use AZURE_CREDENTIALS in GitHub Actions
 ```yaml
 - name: Login to Azure
     uses: azure/login@v1
@@ -178,26 +173,20 @@ Settings → Secrets and variables → Actions -> New repository secret -> AZURE
         --scripts "cd /your/app/directory && git pull && docker-compose up -d --build"
 ```
 
-#### 4. Try Azure DevOps PAT for Github Actions
-- Azure DevOps setup GitHub connection
-- Azure DevOps config PAT: github-deploy: 43Cg7plKmFKv1UOaDDSz80KRuR6q7Ct1w9Ve1pWiGXn6JZoCJwlvJQQJ99BCACAAAAAovqbIAAASAZDO1X40
-- `.github/workflows/ci-azure.yml`: failed to login
-
 Info:
  - https://learn.microsoft.com/en-us/azure/developer/github/github-actions
 
  - https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure
 
-**Conclusion**: No permission to create service principal then might be impossible to login azure from github actions
 
-#### 4. Azure DevOps PAT
+#### Azure DevOps PAT
 
 **Not Tested, might fail**
 
 - Azure DevOps setup GitHub connection
 - Azure DevOps config PAT
 
-#### 5. Deploy from local env with script
+### Deploy from local env with script
 - Ensure You Have SSH Access to the VM
 
 - Make sure you have SSH access to your Azure VM. You need the public IP of the VM and the private key associated with the VM's SSH key.
@@ -212,7 +201,8 @@ Info:
     docker compose up --build -d
     ```
 
-##### Optional
+### Deploy via Azure CLI
+**Not tested**
 ```bash
 az login
 
@@ -224,7 +214,7 @@ az vm run-command invoke --command-id RunShellScript \
 
 ```
 
-#### 6. Final solution for deployment to VM via GitHub Actions
+### Final solution for deployment to VM via GitHub Actions
 
 - Use `scp` to trasfer the code to the VM
 - In Github, navigate to Settings > Secrets and variables > Actions to add secrets required by cicd yaml files

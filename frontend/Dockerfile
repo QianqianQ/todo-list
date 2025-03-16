@@ -3,7 +3,7 @@ FROM node:22-alpine AS builder
 
 # Set environment variables
 ENV NODE_ENV=prod
-ENV NEXT_PUBLIC_API_URL=http://demo-vm-todo-app.northeurope.cloudapp.azure.com/api
+ENV NEXT_PUBLIC_API_URL=http://demo-vm-todo-app-qianqian.northeurope.cloudapp.azure.com/api
 
 # Set the working directory
 WORKDIR /app

@@ -3,7 +3,7 @@ name: Deploy Container Applications to Azure VM
 on:
   push:
     branches:
-      - container-deploy-azure-vm
+      - master
   workflow_dispatch:
 
 jobs:
