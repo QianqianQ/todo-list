@@ -6,14 +6,14 @@
 ```bash
 # 1. create a VM with SSH keys
 az login  # Login to Azure
-az group create --name myResourceGroup --location eastus
-az vm create \
-    --resource-group myResourceGroup \
-    --name myDockerVM \
-    --image Ubuntu2204 \
-    --admin-username azureuser \
-    --generate-ssh-keys \
-    --size Standard_B1s
+# az group create --name myResourceGroup --location eastus
+# az vm create \
+#     --resource-group myResourceGroup \
+#     --name myDockerVM \
+#     --image Ubuntu2204 \
+#     --admin-username azureuser \
+#     --generate-ssh-keys \
+#     --size Standard_B1s
 
 # Allow inbound traffic on ports
 # 80 (HTTP)
@@ -58,8 +58,19 @@ cd yourproject
 scp -r /path/to/yourproject azureuser@your-vm-ip:~/
 ```
 
+### Use an Azure Public DNS Name
+Azure allows you to assign a DNS name to your VM without buying a domain. https://learn.microsoft.com/en-us/azure/virtual-machines/custom-domain
+
+Steps:
+
+- VM -> DNS name / custom domain?
+- Or vm-ip -> Configuration -> DNS name label
+
 ### Run the Docker Containers
 ```bash
+# Before setup, settings ALLOW_ORIGINS, NEXT_PUBLIC_API_URL in .env.prod needs to be updated with VM DNS name, and then
+cp .env.prod .env
+
 # Start the service
 docker-compose up -d
 
@@ -79,14 +90,6 @@ docker stop $(docker ps -aq)
 # Remove all the images
 docker rmi -f $(docker images -aq)
 ```
-
-### Use an Azure Public DNS Name
-Azure allows you to assign a DNS name to your VM without buying a domain. https://learn.microsoft.com/en-us/azure/virtual-machines/custom-domain
-
-Steps:
-
-- vm -> DNS name / custom domain?
-- Or vm-ip -> Configuration -> DNS name label
 
 ### Access app
 - After setting DNS name, you could access from `<domain>:3000`
@@ -148,13 +151,13 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 #### 1. Generate Azure Credentials
 
-**Fails** in create Service Principal: AuthorizationFailed
-
-> The client 'qianqian.qin@janijarvinenintertechno.onmicrosoft.com' with object id '875e83ac-71e7-4b91-8b4c-911805c1775c' does not have authorization to perform action 'Microsoft.Authorization/roleAssignments/write' over scope '/subscriptions/d7a19591-07c4-4235-a5c8-ba15f47f5b3e/resourceGroups/rg-azuretraining-qianqian/providers/Microsoft.Authorization/roleAssignments/36b16ac7-efd2-40ca-91a9-f9aaf87917cd' or the scope is invalid. If access was recently granted, please refresh your credentials.
+**Fails** in create Service Principal with grant roles: AuthorizationFailed
 
 CI/CD pipeline in GitHub may not work
 
 #### 2. Add AZURE_CREDENTIALS to GitHub Secrets
+
+**Fails** in create Service Principal with grant roles: AuthorizationFailed
 
 Settings → Secrets and variables → Actions -> New repository secret -> AZURE_CREDENTIALS -> entire JSON output from Azure output
 
@@ -182,15 +185,14 @@ Info:
 
  - https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure
 
-**Conclusion**: No permission to create service principal then might be impossible to
-login azure from github actions
+**Conclusion**: No permission to create service principal then might be impossible to login azure from github actions
 
 #### 4. Azure DevOps PAT
 
+**Not Tested, might fail**
+
 - Azure DevOps setup GitHub connection
 - Azure DevOps config PAT
-github-deploy: 43Cg7plKmFKv1UOaDDSz80KRuR6q7Ct1w9Ve1pWiGXn6JZoCJwlvJQQJ99BCACAAAAAovqbIAAASAZDO1X40
-
 
 #### 5. Deploy from local env with script
 - Ensure You Have SSH Access to the VM
@@ -264,3 +266,124 @@ https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli
 - Create Kubernetes manifests (YAML files)
 - Deploy to AKS
 - Access: Get the external IP of the Nginx service: `kubectl get svc nginx`
+
+## Static Web App for frontend
+
+https://learn.microsoft.com/en-us/azure/static-web-apps/deploy-nextjs-hybrid
+
+- Best for Static frontends
+- Free tier available
+- GitHub Actions built-in
+- Set API url: GitHub repo Settings -> secret
+- Monitoring
+    - Monitoring -> Metrics
+    - Static Web Apps Diagnostics
+    - Application Insights
+
+The Microsoft Azure Monitor Application Insights JavaScript SDK collects usage data, which allows you to monitor and analyze the performance of JavaScript web applications. 
+
+## App Service for backend
+
+> Error: The requested app service plan cannot be created in the current resource group 'rg-azuretraining-qianqian' because it does not support free Linux app service plans. It has free plan for Windows app service.
+
+- Set API url: Settings -> Env Var
+
+## Azure Function App for backend
+✅ Pros:
+
+✔️ No need to maintain a separate FastAPI App Service
+
+✔️ Serverless & cost-efficient
+
+❌ Cons:
+
+❌ More difficult to manage complex APIs
+
+Create a Function App in Azure.
+
+> Application Insights code-less monitoring isn't supported with your selections of subscription, runtime stack, operating system, publish type, region, or resource group. If you want to keep these selections, you can use the Application Insights SDK to monitor your app.
+
+> When try Cosumption plan, I got the error {"code":"InvalidTemplateDeployment","details":[{"code":"ValidationForResourceFailed","message":"Validation failed for a resource. Check 'Error.Details[0]' for more information.","details":[{"code":"LinuxDynamicWorkersNotAllowedInResourceGroup","message":"Linux dynamic workers are not available in resource group rg-azuretraining-qianqian. Use this link to learn more http://go.microsoft.com/fwlink/?LinkId=825764."}]}],"message":"The template deployment 'Microsoft.Web-FunctionApp-Portal-97a818cd-b364' is not valid according to the validation procedure. The tracking id is '1b2037ed-19b3-40ab-9d02-5d0abd0c9ace'. See inner errors for details."}. After changing to Flex Consumption plan it works
+
+Local development
+```bash
+func init --python
+func init MyProjFolder --worker-runtime python --model V2
+func new --name ManageTask --template "HTTP trigger" --authlevel "anonymous"
+# run locally
+func start
+# publish
+func azure functionapp publish <APP_NAME>
+
+# info
+az functionapp list --resource-group rg-azuretraining-qianqian --output table
+```
+
+- API -> CORS to allow frontend requests
+- Monitoring: Advior recommendations, Application Insights, .etc.
+- Settings -> Environment Variables: TableName, TableStorageConnectionString
+### Deployment issues
+
+- FastAPI app deployment failure
+https://stackoverflow.com/questions/77470247/python-fastapi-az-functions-working-locally-but-not-when-deployed
+
+    Deploy the fastAPI application to Azure Function app with Consumption plan, but couldn't sync the triggers after deployment. Instead, you can deploy your FastAPI function to Function App with App Service Plan
+
+    **Solution**: Migrate FastAPI to Azure Function App
+
+- Github Action deployment with zip file fails when uploading and unzip
+    **Solution**: Dropped
+
+- Github Action deployment with deployment directly
+
+    Using RBAC for authentication. Error: No credentials found. Add an Azure login action before this action. 
+
+    >Reason: Publish profile as an authentication method is not supported when your app is hosted on Linux in a Consumption plan and the project contains an executable file, such as a custom handler, or chrome in Puppeteer/Playwright.(Source: https://github.com/Azure/functions-action?tab=readme-ov-file#workflow-templates)
+
+    Can’t use a service principal or Managed Identity (no permission to assign roles)
+
+    "Login With System-assigned Managed Identity" is only supported on GitHub self-hosted runners and the self-hosted runners need to be hosted by Azure virtual machines.
+
+    No Local Git and FTP Deployment options available
+
+**Final Solution** Local deployment
+
+## Database
+Options:
+    - Azure DB for PostgreSQL (PaaS)
+    - SQL Server on Azure VMs (IaaS)
+    - NoSQL, e.g., CosmosDB
+
+Considering the cost limitation, using Table Storage as db.
+
+- Create storage account -> - create table
+- Monitoring: storage account -> Monitoring
+
+
+## Application Insights
+
+Best Practices for Monitoring Multiple Apps
+
+- Use a Single Resource for Related Apps:
+
+    If your applications are part of the same system (e.g., microservices), use a single Application Insights resource for centralized monitoring and correlation.
+
+- Use Separate Resources for Isolated Apps:
+
+    If your applications are unrelated or managed by different teams, use separate Application Insights resources for isolation.
+
+- Tag Telemetry Data:
+
+    Use custom properties (e.g., appName, environment) to distinguish telemetry data from different apps or environments.
+
+- Set Up Alerts:
+
+    Configure alerts for critical metrics (e.g., response time, failure rate) for each app.
+
+- Use Dashboards:
+
+    Create custom dashboards in the Azure portal to visualize metrics and logs for multiple apps in one place.
+
+- Leverage Distributed Tracing:
+
+    Enable distributed tracing to monitor and debug interactions between services.
