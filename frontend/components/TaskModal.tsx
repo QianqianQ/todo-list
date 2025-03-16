@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, children }) {
+import { ModalProps } from '../models/models';
+
+export default function Modal({ isOpen, onClose, children }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open

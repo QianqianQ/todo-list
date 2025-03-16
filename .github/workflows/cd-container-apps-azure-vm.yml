@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - container-deploy-azure-vm
+  workflow_dispatch:
 
 jobs:
   deploy:

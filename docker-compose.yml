@@ -2,23 +2,23 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
+      # dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    # environment:
-      # - ENV=${ENVIRONMENT}
-      # - NEXT_PUBLIC_API_URL=http://localhost/api
-      # - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-    volumes:
-      - ./frontend:/app  # Mounts local frontend folder
-      - /app/node_modules  # Prevents overwriting node_modules
-    command: npm run dev  # Run Next.js in development mode
+    # volumes:
+    #   - ./frontend:/app  # Mounts local frontend folder for development
+    #   - /app/node_modules  # Prevents overwriting node_modules for development
+    # command: npm run dev  # Run Next.js in development mode
     depends_on:
       - backend
     networks:
       - app-network
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
+    # environment:  # Not loaded, add to Dockerfile instead
+    #   - ENV=${ENVIRONMENT}
+    #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
   backend:
     build:
@@ -28,10 +28,6 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-    # environment:
-    #   - ENV=${ENVIRONMENT}
-    #   - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
-    #   - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/todo_db
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,6 +35,10 @@ services:
       - app-network
     env_file:
       - .env
+    environment:
+      - ENV=${ENVIRONMENT}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - DATABASE_URL=${DATABASE_URL}
 
   postgres:
     image: postgres:latest

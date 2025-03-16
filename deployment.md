@@ -68,8 +68,11 @@ Steps:
 
 ### Run the Docker Containers
 ```bash
-# Before setup, settings ALLOW_ORIGINS, NEXT_PUBLIC_API_URL in .env.prod needs to be updated with VM DNS name, and then
+# Before setup, some configs need to be updated
+# Update ALLOW_ORIGINS, NEXT_PUBLIC_API_URL in .env.prod with the VM DNS name, and then
 cp .env.prod .env
+# Update server_name in nginx.prod.conf
+# Update NEXT_PUBLIC_API_URL in frontend/Dockerfile with the VM DNS name
 
 # Start the service
 docker-compose up -d
