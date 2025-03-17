@@ -408,3 +408,10 @@ Best Practices for Monitoring Multiple Apps
 - Notificaiton service
     - Free tier available
     - No permission to create
+
+## Azure AI
+
+- Create Azure AI Service
+- Azure AI Foundry to deploy a model. gpt-4o-mini
+- https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety:
+**Never deploy your key in client-side environments like browsers or mobile apps.**

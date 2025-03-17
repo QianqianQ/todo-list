@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 import database
 from models import Task
 from schemas import TaskSchema
+import chat
 
 # Load the appropriate .env file based on the environment
 # if os.getenv("ENVIRONMENT") == "prod":
@@ -16,6 +17,8 @@ from schemas import TaskSchema
 #     load_dotenv(".env.local")
 
 app = FastAPI()
+
+app.include_router(chat.router)
 
 # Load environment variables
 allowed_origins = os.getenv(
