@@ -1,5 +1,6 @@
 import os
-
+import asyncio
+import json
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -9,7 +10,7 @@ import database
 from models import Task
 from schemas import TaskSchema
 import chat
-
+from message import send_service_bus_message
 # Load the appropriate .env file based on the environment
 # if os.getenv("ENVIRONMENT") == "prod":
 #     load_dotenv(".env.prod")
@@ -59,10 +60,12 @@ def get_tasks(db: Session = Depends(get_db)):
 
 @app.post("/tasks", response_model=TaskSchema)
 def create_task(task: TaskSchema, db: Session = Depends(get_db)):
-    task = Task(**task.model_dump())  # Convert Pydantic model to SQLAlchemy model:
+    model_dump = task.model_dump()
+    task = Task(**model_dump)  # Convert Pydantic model to SQLAlchemy model:
     db.add(task)
     db.commit()
     db.refresh(task)
+    asyncio.run(send_service_bus_message(json.dumps(model_dump)))
     return task
 
 
