@@ -380,3 +380,31 @@ Best Practices for Monitoring Multiple Apps
 - Leverage Distributed Tracing:
 
     Enable distributed tracing to monitor and debug interactions between services.
+
+## Events and Messages
+
+- No permission to create event grid, event hub
+- Using Service Bus
+
+### Service Bus
+
+- Create Service Bus namespace: basic tier, no topic option
+- Create a queue
+- RBAC or connetion string
+    - connection string -> Shared access policies -> RootManageSharedAccessKey
+- Schedules a message to appear on Service Bus at a later time: Azure SDK for .NET. No SDK for python
+
+
+## Logic App
+- Consumption
+- log analytics workspace enabled
+- Initial idea: ->
+    - new entity in table storage -> enqueue a new message to Service Bus (scheduled) -> Notification Service
+    - Azure Table Storage built-in connector, which is available only for Standard workflows in single-tenant Azure Logic Apps.
+- Try HTTP trigger with backend api: No trigger
+- HTTP trigger -> get entity -> put in service bus queue
+
+
+- Notificaiton service
+    - Free tier available
+    - No permission to create
