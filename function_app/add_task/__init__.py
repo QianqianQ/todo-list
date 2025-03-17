@@ -4,6 +4,8 @@ import json
 import azure.functions as func
 from azure.data.tables import TableServiceClient
 
+from .message import send_service_bus_message
+
 connection_string = os.environ["TableStorageConnectionString"]
 table_name = os.environ["TableName"]
 
@@ -26,7 +28,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         "description": task["description"]
     }
     table_client.upsert_entity(entity=entity)
-
+    send_service_bus_message(json.dumps(entity))
     return func.HttpResponse(
         json.dumps(task),
         mimetype="application/json"
