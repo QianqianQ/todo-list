@@ -27,3 +27,12 @@ export const updateTask = async (task: Task): Promise<Task> => {
 export const deleteTask = async (id: string): Promise<void> => {
   await axios.delete(`${apiUrl}/${id}`);
 };
+
+export const chatCompletion = async (message: string): Promise<string> => {
+  try {
+    const response = await axios.post(`${apiBaseUrl}/chat`, {"message": message});
+    return response.data.response;
+  } catch(err: unknown) {
+    return "Error in chatbot. Please try again";
+  }
+};

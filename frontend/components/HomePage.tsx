@@ -5,6 +5,7 @@ import manageTasks from "@/hooks/manageTask";
 import TaskList from "./TaskList";
 import TaskForm from "./TaskForm";
 import TaskModal from './TaskModal';
+import ChatBox from "./ChatBox";
 
 export default function HomePage() {
 
@@ -25,6 +26,7 @@ export default function HomePage() {
         tasks={tasks}
         onDeleteTask={handleDeleteTask}
        />
+       <ChatBox />
       <TaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <TaskForm
           onAddTask={handleAddTask}
