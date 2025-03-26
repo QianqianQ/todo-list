@@ -16,7 +16,7 @@ services:
       - app-network
     # env_file:
     #   - .env
-    # environment:  # Not loaded, add to Dockerfile instead
+    # environment:  # Issue: Not loaded, add to Dockerfile instead
     #   - ENV=${ENVIRONMENT}
     #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 

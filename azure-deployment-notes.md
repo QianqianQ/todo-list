@@ -1,4 +1,4 @@
-# Deployment
+# Azure Deployment Notes
 
 ## Docker Compose: Deploy your app locally or on a single server.
 

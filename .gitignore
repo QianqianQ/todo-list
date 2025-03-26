@@ -2,4 +2,7 @@
 __pycache__
 .vscode
 
+# Config files
+.env.*
+nginx.*.conf
 

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from openai import AzureOpenAI
 
 
-endpoint = os.getenv("ENDPOINT_URL", "https://demo-ai-qianqian.cognitiveservices.azure.com/")
+endpoint = os.getenv("ENDPOINT_URL", "https://xxx.cognitiveservices.azure.com/")
 model_name = os.getenv("MODEL_NAME", "gpt-4o-mini")
 deployment = os.getenv("AI_MODEL_DEPLOYMENT", "gpt-4o-mini")
 
