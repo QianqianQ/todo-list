@@ -1,8 +1,10 @@
 # Azure Deployment Notes
 
-## Docker Compose: Deploy your app locally or on a single server.
+## Docker Compose
 
-### Set Up Your Azure VM
+Deploy the app locally or on a single server
+
+### Set Up Azure VM
 ```bash
 # 1. create a VM with SSH keys
 az login  # Login to Azure
@@ -31,7 +33,7 @@ az vm list-ip-addresses
 ssh -i ~/.ssh/demo-app-vm-linux_key.pem azureuser@40.113.94.77  
 ```
 
-## Install Dependencies on the VM
+### Install Dependencies on the VM
 ```bash
 # Update packages
 sudo apt update && sudo apt upgrade -y
@@ -49,7 +51,7 @@ sudo usermod -aG docker $USER
 newgrp docker  # Apply changes without logout
 ```
 
-### Transfer Your Project to the VM
+### Transfer Project to the VM
 ```bash
 # a SSH key may need to be gernerated in the VM and add the public key to Github to grant authentication
 git clone https://github.com/yourusername/yourproject.git
@@ -84,14 +86,9 @@ docker-compose down
 docker ps
 
 # Debugging
-docker exec -it nginx_proxy nginx -t
+docker exec -it nginx_proxy nginx
 docker-compose logs -f
 docker logs nginx_proxy
-
-# Stop all the containers
-docker stop $(docker ps -aq)
-# Remove all the images
-docker rmi -f $(docker images -aq)
 ```
 
 ### Access app
@@ -178,11 +175,8 @@ Info:
 
  - https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure
 
-
 #### Azure DevOps PAT
-
 **Not Tested, might fail**
-
 - Azure DevOps setup GitHub connection
 - Azure DevOps config PAT
 
@@ -193,7 +187,7 @@ Info:
 
 - Ensure Docker & Docker Compose Are Installed on Your VM
 
-- exec `deploy.sh`
+- exec `local_deploy_to_vm.sh`
 
 - For local testing
     ```bash
@@ -211,7 +205,6 @@ az vm run-command invoke --command-id RunShellScript \
   --name your_vm_name \
   --resource-group your_resource_group \
   --scripts "cd /path/to/your/app && git pull && docker-compose up -d --build"
-
 ```
 
 ### Final solution for deployment to VM via GitHub Actions
@@ -250,7 +243,6 @@ chown azureuser:azureuser /home/azureuser/app
 ## Azure Kubernetes Service (Not Tested) 
 
 https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli
-
 
 - Each component (FastAPI, Next.js, PostgreSQL, Nginx) needs to be containerized using Docker.
 - Push Docker Images to Azure Container Registry (ACR)

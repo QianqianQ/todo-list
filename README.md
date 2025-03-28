@@ -1,177 +1,72 @@
-# Azure-Powered To-Do List Application
+# To-Do List
 
 ## Project Overview
-A full-stack to-do list application with robust features, scalable architecture, and cloud-native design.
+A simple to-do list app serving as a training project for implementing containerization and cloud deployment strategies.
 
-FastAPI + Next.js + PostgreSQL + Redis + Celery
-
-## Deployment
-### PaaS: Render, Railway
-### Container-Based
-- Docker Compose: Great for local dev, not ideal for production
-- Azure Container Apps	
-- IaaS: Azure VM
-- Serverless Functions. No Redis support
-  - FastAPI: as serverless func
-  - managed DB 
-
+## Features
+- Basic operations for tasks
+- Simple UI for demonstration purposes
+- RESTful API endpoints
+- Containerized setup for practicing Docker concepts
+- Cloud services implementation for practicing Azure services
 
 ## Technology Stack
-### Frontend
-User interacts with the React/Angular app, Makes API calls to the backend for CRUD operations.
 
+### Frontend
 - Framework: Next.js
-- State Management: Redux or Zustand
-- Data fetching and caching: React Query
-- UI Library: Shadcn/UI or Chakra UI
-- Styling: Tailwind CSS, Material-UI, or Bootstrap
-- API Communication: Axios or Fetch API
-- Deployment: Azure Static Web Apps / App services
+- Styling: Tailwind CSS
+- API Communication: Axios
 
 ### Backend
-Handles business logic and communicates with the database, Sends notifications via Azure Service Bus or Communication Services.
-
-- Framework: FastAPI (Python)
-- Authentication
-    - Azure Active Directory B2C for secure, scalable authentication (Not implemented for training)
-    - OAuth2
-    - JWT
-- Data validation: Pydantic
-- API Design: RESTful with OpenAPI/Swagger (FastAPI has built-in support)
-- Dependency injection for services
-- Deployment:
-    - VM
-    - Azure Functions
-    - App Services
+- Option 1
+  - Framework: FastAPI (Python)
+  - Data validation: Pydantic
+  - API Design: RESTful API
+- Option 2 (`backend_azure_func_app_with_azure_table` branch)
+  - Azure Function Apps
 
 ### Database
-Stores user data, tasks, and other relevant information.
+Options
+- PostgreSQL for data persistence. Managed through Docker container
+- Azure Table Storage as cloud solution
+  
+### Others
+- Nginx for reverse Proxy for dockerization solution
 
-- NoSQL
-    - Azure Cosmos DB (NoSQL, allows flexible schema and horizontal scaling)
-    - Partition Key: User ID
-    - Data Model: Task documents with metadata
-- Relational SQL
-    - PostgreSQL
-    - Azure SQL Database. Azure Db for PostgreSQL
-- ORM
-    - SQLAlchemy
-    - SQLModel
+## Deployment
 
-### Messaging/Notification Service
-Sends reminders or notifications to users.
+### Master Branch
+Master branch focuses on Docker containerization and local development.
 
-- Service
-    - Azure Service Bus: For event-driven tasks like task reminders and notifications.
-    - Azure notification Hub
-    - Azure Communication Services: For sending emails or SMS notifications. (X)
-    - WebSockets: For real-time updates.
-    - Redis / RabbitMQ
+1. Clone the repository
+2. Set up environment variables in `.env` file
+3. copy `nginx.conf` as `nginx.dev.conf`
+4. Run `docker compose up --build`
+5. Access frontend at `http://localhost:3000`
+6. Access backend API at `http://localhost:8000`
 
-### Hosting
-- Azure App Service
-- Azure Static web apps
-- AKS (Free tier)
+- Could be deployed to an Azure VM via `local_deploy_to_vm.sh` or GitHub Actions `cd-container-apps-azure-vm.yml`
+- `cd-frontend-azure-static-web-apps.yml` takes actions to deploy the frontend to Azure Static Web App service. the backend base API `NEXT_PUBLIC_API_URL` is store as GitHub secrets
 
-- Frontend
-    - Azure Static web apps
-    - Azure App Service
-- Backend
-    - Azure App Service
-    - Azure Functions (serverless)
+#### Azure VM Deployment Workflow
+<p align="center">
+  <img src="assets/azure_vm_workflow.png" alt="Azure VM Deployment Workflow Diagram" />
+</p>
 
-### Additional Services
-- Azure Functions (Serverless Compute)
-- Azure Key Vault (Secrets Management)
-- Azure Application Insights (Monitoring)
-- Azure API Management (API Gateway)
-- Azure DevOps
+#### Containerized Application Architecture
+<p align="center">
+  <img src="assets/container_app_architecture.png" alt="Containerized Application Architecture Diagram" />
+</p>
 
-## Key Features
-1. User Authentication
-    - Sign up, login, and logout
-2. CRUD Operations for Tasks
-    - Create, read, update, and delete (CRUD) tasks.
-    - Mark tasks as completed.
-    - Set due dates and priorities.
-3. Task Categorization
-4. (Optional)Search and Filter
-    - Search for tasks and filter by status, priority, or due date
-4. Priority and Status Tracking
-5. Reminders and Notifications
-    - Send reminders or notifications for upcoming tasks (e.g., via email or SMS using Azure Communication Services).
-    - Scheduled notifications using Azure Functions + Service Bus
-6. (Advanced)Real-Time Updates
-    - Use WebSockets for real-time updates across devices
+### Azure Deployment Branches
+Azure-specific branches explore different Azure deployment strategies.
 
+- `backend_azure_web_app_with_azure_table`: Backend Deployment to Azure App Service Web Apps.
+- `backend_azure_func_app_with_azure_table`: Backend is built with Azure Function Apps.
+- The branches also contain the implementations of Azure Service Bus (sending scheduled messages) and AI chatbox built with Azure AI Service.
 
-## Architecture Diagram Concept
-- User interacts with React Frontend
-- Frontend calls FastAPI Backend
-- Backend processes requests via Cosmos DB
-- Service Bus handles async messaging
-- Azure AD manages authentication
+#### Cloud Solution Architecture
+<p align="center">
+  <img src="assets/cloud_solution_architecture.png" alt="Cloud Solution Architecture Diagram" />
+</p>
 
-## Proposed Project Structure
-```
-todo-app/
-│
-├── frontend/               # React TypeScript Project
-│   ├── src/
-│   │   ├── components/
-│   │   ├── services/
-│   │   ├── redux/
-│   │   └── App.tsx
-│   └── package.json
-│
-├── backend/                # FastAPI Python Project
-│   ├── app/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   └── main.py
-│   └── requirements.txt
-│
-├── infrastructure/         # Terraform/Bicep for Azure
-│   ├── main.tf
-│   └── variables.tf
-│
-└── azure-pipelines.yml     # CI/CD Configuration
-```
-
-## Development Phases
-1. Project Setup
-2. Basic CRUD Functionality
-3. Testing and Optimization
-4. Deployment
-5. Advanced Features
-
-## Estimated Effort
-- Frontend: 2-3 weeks
-- Backend: 2-3 weeks
-- Infrastructure: 1 week
-- Integration and Testing: 2 weeks
-
-
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-redis-cli -h 127.0.0.1 -p 6379 ping
-sudo netstat -tlnp | grep 6379
-
-uvicorn: uvicorn main:app --workers 4
-gunicorn: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker
-
-GUNICORN is a WSGI framework,  is not compatible with Fastapi, since Fastapi uses the ASGI standard (i.e. asynchronous). his means that Gunicorn will have to use some layer of abstraction (uvicorn.workers.UvicornWorker) in order to communicate with the asynchronous calls.
-
-On the other hand, Uvicorn is an ASGI framework which has been developed with asynchronous in mind and can interact directly with the underlying Fastapi application.
-
-## Optional: Celery
-
-celery -A tasks worker --loglevel=info
-
-celery: for background messaging
-
-✅ Basic Messaging: Use Redis Pub/Sub.
-✅ WebSockets + Redis: Real-time messaging.
-✅ Background Processing: Use Celery + Redis.
-✅ Docker Integration: Use Docker Compose.

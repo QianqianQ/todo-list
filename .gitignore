@@ -6,3 +6,7 @@ __pycache__
 .env.*
 nginx.*.conf
 
+# Azure related
+__azurite*
+AzuriteConfig
+local.settings.json
