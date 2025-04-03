@@ -2,17 +2,19 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}  # This pulls from .env file or env var settings
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app  # Mounts local frontend folder for development
+      - /app/node_modules  # Prevents overwriting node_modules for development
+    command: npm run dev  # Run Next.js in development mode
     depends_on:
       - backend
     networks:
       - app-network
     env_file:
-      - .env
+      - .env.dev
 
   backend:
     build:
@@ -20,15 +22,16 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
     volumes:
-      - ./backend:/app
+      - ./backend:/app  # Mounts local frontend folder for development
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - app-network
     env_file:
-      - .env
+      - .env.dev
 
   postgres:
     image: postgres:latest
@@ -43,12 +46,12 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-U", "${PGUSER}", "-d", "${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
       interval: 1s
       timeout: 5s
       retries: 10
     env_file:
-      - .env
+      - .env.dev
 
   # Nginx service
   nginx:
@@ -60,15 +63,13 @@ services:
       - "443:443"    # Expose Nginx on port 443 (for HTTPS)
     volumes:
       - ./${NGINX_CONFIG}:/etc/nginx/nginx.conf  # Load the correct config based on the environment
-      # - ./certs:/etc/nginx/certs            # Mount SSL certificates (optional)
-      # - ./certbot/conf:/etc/letsencrypt
     depends_on:
       - backend
       - frontend
     networks:
       - app-network
     env_file:
-      - .env
+      - .env.dev
 
 networks:
   app-network:

@@ -9,7 +9,7 @@ import database
 from models import Task
 from schemas import TaskSchema
 import chat
-from message import send_service_bus_message
+
 # Load the appropriate .env file based on the environment
 # if os.getenv("ENVIRONMENT") == "prod":
 #     load_dotenv(".env.prod")
@@ -21,9 +21,7 @@ app = FastAPI()
 app.include_router(chat.router)
 
 # Load environment variables
-allowed_origins = os.getenv(
-    "ALLOW_ORIGINS",
-    "http://localhost,http://127.0.0.1,http://localhost:3000,http://127.0.0.1:3000").split(",")
+allowed_origins = os.getenv("ALLOW_ORIGINS")
 # debug = os.getenv("DEBUG", "False") == "True"
 
 # Add CORS middleware
@@ -58,21 +56,44 @@ def get_tasks(db: Session = Depends(get_db)):
 
 
 @app.post("/tasks", response_model=TaskSchema)
-def create_task(task: TaskSchema, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def create_task(task: TaskSchema, db: Session = Depends(get_db)):
     model_dump = task.model_dump()
     task = Task(**model_dump)  # Convert Pydantic model to SQLAlchemy model:
     db.add(task)
     db.commit()
     db.refresh(task)
-    background_tasks.add_task(send_service_bus_message, json.dumps(model_dump))
     return task
 
 
-# @app.put("/tasks/{task_id}")
-# def update_task(task_id: int, task: Task):
-#     tasks[task_id] = task
-#     print(tasks)
-#     return task
+@app.put("/tasks/{task_id}", response_model=TaskSchema)
+def update_task(task_id: str, task: TaskSchema, db: Session = Depends(get_db)):
+    """
+    Update a task by ID.
+
+    Example API call:
+    PUT /tasks/123
+    Request Body:
+    {
+        "title": "Updated Task",
+        "description": "New description",
+        "completed": true
+    }
+
+    Returns:
+    The updated task object
+    """
+    db_task = db.query(Task).filter(Task.id == task_id).first()
+
+    if not db_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Update task fields
+    for key, value in task.model_dump().items():
+        setattr(db_task, key, value)
+
+    db.commit()
+    db.refresh(db_task)
+    return db_task
 
 
 @app.delete("/tasks/{task_id}")

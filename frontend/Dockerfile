@@ -1,9 +1,12 @@
 # Use the official Node.js image as a base
 FROM node:22-alpine AS builder
 
-# Set environment variables
+# Define build-time argument
+ARG NEXT_PUBLIC_API_URL
+
+# Set environment variables for runtime
 ENV NODE_ENV=prod
-ENV NEXT_PUBLIC_API_URL=http://demo-vm-todo-app-qianqian.northeurope.cloudapp.azure.com/api
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Set the working directory
 WORKDIR /app
@@ -18,7 +21,7 @@ RUN npm install --frozen-lockfile
 COPY . .
 
 # Build the Next.js application
-RUN npm run build
+RUN NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} npm run build
 
 # Use a minimal image for the runtime
 FROM node:22-alpine AS runner
@@ -34,9 +37,6 @@ COPY --from=builder /app/public ./public
 
 # Install only production dependencies
 RUN npm install --production
-
-# Set environment variable for production
-# ENV NODE_ENV=production
 
 # Expose the port Next.js runs on
 EXPOSE 3000

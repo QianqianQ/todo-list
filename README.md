@@ -33,6 +33,69 @@ Options
 ### Others
 - Nginx for reverse Proxy for dockerization solution
 
+## Development
+
+### Development with Docker
+
+1. **Development Environment Setup**
+   ```bash
+   # Environment variables for development. Required for both frontend and backend services
+   cp .env .env.dev
+   # nginx Configuration for development
+   cp nginx.conf nginx.dev.conf
+   ```
+
+2. **Running the Development Environment**
+   ```bash
+   # Start all services
+   docker-compose -f docker-compose.dev.yml up --build
+
+   # Stop all services
+   docker-compose -f docker-compose.dev.yml down
+
+   # View logs for specific service
+   docker-compose -f docker-compose.dev.yml logs -f <service_name>
+   ```
+   - Frontend accessible at `http://localhost`
+   - Backend API accessible at `http://localhost/api/`
+   - PostgreSQL accessible at `localhost:5432`
+
+3. **Frontend Development Commands**
+   ```bash
+   # Access frontend container shell
+   docker exec -it frontend sh
+
+   # Install new dependencies
+   docker exec frontend npm install <package_name>
+
+   # Run linting
+   docker exec frontend npm run lint
+   ```
+
+4. **Backend Development Commands**
+   ```bash
+   # Access backend container shell
+   docker exec -it backend sh
+
+   # View backend logs
+   docker-compose -f docker-compose.dev.yml logs -f backend
+   ```
+
+5. **Database Management Commands**
+   ```bash
+   # Access PostgreSQL container
+   docker exec -it postgres psql -U postgres
+
+   # List databases
+   \l
+
+   # Connect to todo_db
+   \c todo_db
+
+   # List tables
+   \dt
+   ```
+
 ## Deployment
 
 ### Master Branch
