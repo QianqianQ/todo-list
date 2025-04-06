@@ -3,21 +3,21 @@
 ## Project Overview
 A simple to-do list app serving as a training project for implementing containerization and cloud deployment strategies.
 
-## Features
+### Features
 - Basic operations for tasks
 - Simple UI for demonstration purposes
 - RESTful API endpoints
 - Containerized setup for practicing Docker concepts
 - Cloud services implementation for practicing Azure services
 
-## Technology Stack
+### Technology Stack
 
-### Frontend
+#### Frontend
 - Framework: Next.js
 - Styling: Tailwind CSS
 - API Communication: Axios
 
-### Backend
+#### Backend
 - Option 1
   - Framework: FastAPI (Python)
   - Data validation: Pydantic
@@ -25,12 +25,12 @@ A simple to-do list app serving as a training project for implementing container
 - Option 2 (`backend_azure_func_app_with_azure_table` branch)
   - Azure Function Apps
 
-### Database
+#### Database
 Options
 - PostgreSQL for data persistence. Managed through Docker container
 - Azure Table Storage as cloud solution
   
-### Others
+#### Others
 - Nginx for reverse Proxy for dockerization solution
 
 ## Development
@@ -60,28 +60,22 @@ Options
    - Backend API accessible at `http://localhost/api/`
    - PostgreSQL accessible at `localhost:5432`
 
-3. **Frontend Development Commands**
+3. **Development Commands**
    ```bash
    # Access frontend container shell
    docker exec -it frontend sh
-
-   # Install new dependencies
-   docker exec frontend npm install <package_name>
-
-   # Run linting
-   docker exec frontend npm run lint
    ```
 
-4. **Backend Development Commands**
    ```bash
    # Access backend container shell
    docker exec -it backend sh
+   ```
 
+   ```bash
    # View backend logs
    docker-compose -f docker-compose.dev.yml logs -f backend
    ```
 
-5. **Database Management Commands**
    ```bash
    # Access PostgreSQL container
    docker exec -it postgres psql -U postgres
@@ -96,20 +90,14 @@ Options
    \dt
    ```
 
-## Deployment
+## Azure Deployment
 
-### Master Branch
+### Azure VM
 Master branch focuses on Docker containerization and local development.
 
-1. Clone the repository
-2. Set up environment variables in `.env` file
-3. copy `nginx.conf` as `nginx.dev.conf`
-4. Run `docker compose up --build`
-5. Access frontend at `http://localhost:3000`
-6. Access backend API at `http://localhost:8000`
-
-- Could be deployed to an Azure VM via `local_deploy_to_vm.sh` or GitHub Actions `cd-container-apps-azure-vm.yml`
-- `cd-frontend-azure-static-web-apps.yml` takes actions to deploy the frontend to Azure Static Web App service. the backend base API `NEXT_PUBLIC_API_URL` is store as GitHub secrets
+- Options of Azure VM deployment:
+  - via `local_deploy_to_vm.sh`
+  - GitHub Actions `cd-container-apps-azure-vm.yml`
 
 #### Azure VM Deployment Workflow
 <p align="center">
@@ -121,15 +109,60 @@ Master branch focuses on Docker containerization and local development.
   <img src="assets/container_app_architecture.png" alt="Containerized Application Architecture Diagram" />
 </p>
 
-### Azure Deployment Branches
-Azure-specific branches explore different Azure deployment strategies.
 
-- `backend_azure_web_app_with_azure_table`: Backend Deployment to Azure App Service Web Apps.
-- `backend_azure_func_app_with_azure_table`: Backend is built with Azure Function Apps.
-- The branches also contain the implementations of Azure Service Bus (sending scheduled messages) and AI chatbox built with Azure AI Service.
 
-#### Cloud Solution Architecture
+### Other Azure Cloud Services
+Azure-specific branches explore different Azure deployment strategies with Azure table storage as the database.
+
+- Frontend
+  - `.github/workflows/cd-frontend-azure-static-web-apps.yml` takes actions to deploy the frontend to Azure Static Web App service. the backend base API `NEXT_PUBLIC_API_URL` is store as GitHub secrets.
+
+- Backend
+  - `backend_azure_web_app_with_azure_table` branch: `.github/workflows/cd-backend-azure-web-app.yml` takes actions to deploy the backend to Azure App Service Web Apps.
+  - `backend_azure_func_app_with_azure_table` branch: Backend is built with Azure Function Apps. `.github/workflows/cd-backend-azure-func-app.yml` takes actions to deploy the function app to Azure cloud.
+  - The branches also contain the implementations of Azure Service Bus (sending scheduled messages) and AI chatbox built with Azure AI Service.
+
+#### Azure Cloud Solution Architecture
 <p align="center">
   <img src="assets/cloud_solution_architecture.png" alt="Cloud Solution Architecture Diagram" />
 </p>
 
+## Other Deployments
+
+### Deploying FastAPI backend to Render
+Add new `Web Service` instance from `Render` dashboard:
+   1. **Connect to the GitHub repository**
+   2. Configure the following settings:
+      - **Name**: Choose a name for your service
+      - **Project** (Optional): Create/Add to a project
+      - **Language**: Choose `Docker`
+      - **Branch**: Select the branch to deploy (usually master)
+      - **Region**: Select your preferred region
+      - **Root Directory**: `./backend`
+   3. Add **Environment Variables**:
+      - `ENV`: `prod` for production
+      - `DATABASE_URL`: PostgreSQL URL. If using Render PostgreSQL instance, create one as the 2nd step and then add `Internal Database URL` value
+      - `ALLOW_ORIGINS`: Any allowed origins as needed, e.g., `['*']`
+
+      Environment variables also could be set in `.env` file and import at a time.
+
+### Create PostgreSQL database in Render
+   Add new `Postgres` service from `Render` dashboard. 
+
+   Configure the following settings:
+   - **Name**: Choose a name for the db
+   - **Project** (Optional): Add to the same project as the backend
+   - **Database**: `todo_db`
+   - **User**: `dbuser`
+   - **Region**: Select your preferred region
+
+### Deploying Next.js frontend to Vercel
+Add new `project`
+1. Import the Git repository
+2. Configure the following settings:
+   1. **Project Name**: Give a name for the frontend
+   2. **Root Directory**: Choose `frontend`
+   3. **Framework Preset**: Choose `Next.js`
+   4. **Environment Variables**
+      - `NEXT_PUBLIC_API_URL`: backend URL (e.g., from web service deployed to Render)
+   5. Click **Deploy**
